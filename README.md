@@ -3,317 +3,342 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>NOVA Assistant</title>
+<title>NOVA</title>
 
 <style>
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+
+body{
+margin:0;
+min-height:100vh;
+background:#05070d;
+color:white;
+font-family:Arial,sans-serif;
+display:flex;
+justify-content:center;
+align-items:center
 }
 
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: #05070d;
-    color: white;
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.app{
+width:100%;
+max-width:600px;
+padding:25px;
+text-align:center
 }
 
-.container {
-    width: 100%;
-    max-width: 600px;
-    padding: 25px;
-    text-align: center;
+h1{
+font-size:45px;
+letter-spacing:8px;
+margin:5px
 }
 
-h1 {
-    font-size: 42px;
-    margin-bottom: 5px;
-    letter-spacing: 5px;
+.sub{
+color:#888;
+margin-bottom:30px
 }
 
-.subtitle {
-    color: #888;
-    margin-bottom: 35px;
+.orb{
+width:180px;
+height:180px;
+margin:20px auto;
+border-radius:50%;
+background:radial-gradient(circle,#fff 0%,#7180ff 15%,#293cff 45%,#07091c 72%);
+box-shadow:0 0 35px #4050ff,0 0 100px #202fff;
+animation:pulse 3s infinite
 }
 
-.orb {
-    width: 190px;
-    height: 190px;
-    margin: auto;
-    border-radius: 50%;
-    background: radial-gradient(circle at center, #ffffff 0%, #6d7cff 15%, #273cff 45%, #080b25 70%);
-    box-shadow: 0 0 30px #394cff, 0 0 80px #1e2cff;
-    animation: pulse 3s infinite;
+@keyframes pulse{
+50%{transform:scale(1.07);box-shadow:0 0 60px #6570ff,0 0 130px #293cff}
 }
 
-@keyframes pulse {
-    0%,100% {
-        transform: scale(1);
-        box-shadow: 0 0 30px #394cff, 0 0 80px #1e2cff;
-    }
-
-    50% {
-        transform: scale(1.08);
-        box-shadow: 0 0 50px #6570ff, 0 0 120px #293cff;
-    }
+button{
+border:0;
+border-radius:40px;
+padding:18px 30px;
+font-size:18px;
+font-weight:bold;
+cursor:pointer
 }
 
-button {
-    margin-top: 35px;
-    padding: 18px 35px;
-    border: none;
-    border-radius: 40px;
-    background: white;
-    color: black;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
+#status{
+margin:20px;
+color:#aaa
 }
 
-button:active {
-    transform: scale(.95);
+.chat{
+background:#10131d;
+border-radius:18px;
+padding:20px;
+text-align:left;
+min-height:100px
 }
 
-#status {
-    margin-top: 20px;
-    color: #aaa;
+.user{
+color:#aaa;
+margin-bottom:12px
 }
 
-.chat {
-    margin-top: 30px;
-    background: #10131d;
-    border-radius: 18px;
-    padding: 18px;
-    min-height: 70px;
-    text-align: left;
-}
-
-#response {
-    color: #ddd;
-    line-height: 1.5;
+.nova{
+line-height:1.5
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-    <h1>NOVA</h1>
+<h1>NOVA</h1>
+<div class="sub">Tu asistente inteligente</div>
 
-    <div class="subtitle">
-        Tu asistente inteligente
-    </div>
+<div class="orb"></div>
 
-    <div class="orb"></div>
+<button onclick="hablar()">🎙️ Hablar con NOVA</button>
 
-    <button onclick="startNOVA()">
-        🎙️ Hablar con NOVA
-    </button>
+<div id="status">Pulsa el botón para comenzar</div>
 
-    <div id="status">
-        Pulsa el botón para hablar
-    </div>
-
-    <div class="chat">
-        <div id="response">
-            NOVA está lista.
-        </div>
-    </div>
+<div class="chat">
+<div id="user" class="user"></div>
+<div id="nova" class="nova">Hola. Soy NOVA. Estoy lista.</div>
+</div>
 
 </div>
 
 <script>
 
-const statusText = document.getElementById("status");
-const responseText = document.getElementById("response");
-
-const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+const Recognition =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
 
 let recognition;
 
-if (SpeechRecognition) {
+if(Recognition){
 
-    recognition = new SpeechRecognition();
+recognition=new Recognition();
 
-    recognition.lang = "es-CO";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+recognition.lang="es-CO";
+recognition.continuous=false;
+recognition.interimResults=false;
 
-    recognition.onstart = function() {
-        statusText.innerText = "🎙️ Escuchando...";
-    };
+recognition.onstart=()=>{
+document.getElementById("status").innerText="🎙️ Escuchando...";
+};
 
-    recognition.onresult = function(event) {
+recognition.onresult=(event)=>{
 
-        const text =
-            event.results[0][0].transcript.toLowerCase();
+const texto=event.results[0][0].transcript;
 
-        statusText.innerText = "Procesando...";
+document.getElementById("user").innerText="Tú: "+texto;
 
-        responseText.innerText =
-            "Tú: " + text;
+responder(texto);
 
-        processCommand(text);
-    };
+};
 
-    recognition.onerror = function(event) {
+recognition.onerror=(event)=>{
 
-        statusText.innerText =
-            "Error del micrófono: " + event.error;
-    };
+document.getElementById("status").innerText=
+"Error: "+event.error;
 
-    recognition.onend = function() {
+};
 
-        if (statusText.innerText === "🎙️ Escuchando...") {
-            statusText.innerText = "Pulsa nuevamente para hablar";
-        }
-    };
+}else{
 
-} else {
+document.getElementById("status").innerText=
+"Este navegador no admite reconocimiento de voz.";
 
-    statusText.innerText =
-        "Tu navegador no permite reconocimiento de voz.";
 }
 
 
-function startNOVA() {
+function hablar(){
 
-    if (!recognition) {
+if(recognition){
 
-        speak("Tu navegador no permite reconocimiento de voz.");
+try{
+recognition.start();
+}catch(e){}
 
-        return;
-    }
+}
 
-    recognition.start();
 }
 
 
-function processCommand(text) {
+function responder(texto){
 
-    let answer = "";
+const t=texto.toLowerCase().trim();
 
-    if (
-        text.includes("hola") ||
-        text.includes("buenas")
-    ) {
+let respuesta="";
 
-        answer =
-            "Hola. Soy NOVA. ¿En qué puedo ayudarte?";
 
-    }
+// SALUDOS
 
-    else if (
-        text.includes("cómo estás") ||
-        text.includes("como estas")
-    ) {
+if(t.match(/hola|buenas|hey|buenos días|buenas tardes|buenas noches/)){
 
-        answer =
-            "Estoy funcionando correctamente.";
+respuesta="Hola. Soy NOVA. ¿En qué puedo ayudarte?";
 
-    }
-
-    else if (
-        text.includes("qué puedes hacer") ||
-        text.includes("que puedes hacer")
-    ) {
-
-        answer =
-            "Puedo escucharte, responder comandos y ayudarte a interactuar con tu sistema.";
-
-    }
-
-    else if (
-        text.includes("hora")
-    ) {
-
-        const now = new Date();
-
-        answer =
-            "Son las " +
-            now.toLocaleTimeString("es-CO", {
-                hour: "2-digit",
-                minute: "2-digit"
-            });
-
-    }
-
-    else if (
-        text.includes("abre youtube")
-    ) {
-
-        answer = "Abriendo YouTube.";
-
-        speak(answer);
-
-        setTimeout(function() {
-            window.open(
-                "https://www.youtube.com",
-                "_blank"
-            );
-        }, 1000);
-
-        return;
-    }
-
-    else if (
-        text.includes("abre google")
-    ) {
-
-        answer = "Abriendo Google.";
-
-        speak(answer);
-
-        setTimeout(function() {
-            window.open(
-                "https://www.google.com",
-                "_blank"
-            );
-        }, 1000);
-
-        return;
-    }
-
-    else {
-
-        answer =
-            "Escuché: " +
-            text +
-            ". Todavía estoy aprendiendo a responder esa solicitud.";
-    }
-
-    responseText.innerText = "NOVA: " + answer;
-
-    speak(answer);
-
-    statusText.innerText =
-        "Pulsa el botón para hablar";
 }
 
 
-function speak(text) {
+// IDENTIDAD
 
-    if (!("speechSynthesis" in window)) {
-        return;
-    }
+else if(t.includes("quién eres") || t.includes("quien eres")){
 
-    window.speechSynthesis.cancel();
+respuesta="Soy NOVA, tu asistente virtual. Esta es mi primera versión.";
 
-    const voice =
-        new SpeechSynthesisUtterance(text);
+}
 
-    voice.lang = "es-CO";
-    voice.rate = 1;
-    voice.pitch = 1;
 
-    window.speechSynthesis.speak(voice);
+// CAPACIDADES
+
+else if(
+t.includes("qué puedes hacer") ||
+t.includes("que puedes hacer")
+){
+
+respuesta="Puedo escucharte, responder preguntas básicas, decirte la hora, hacer cálculos y abrir algunas páginas. Mi inteligencia artificial avanzada será añadida en la siguiente etapa.";
+
+}
+
+
+// HORA
+
+else if(t.includes("hora")){
+
+respuesta="En este momento son las "+
+new Date().toLocaleTimeString("es-CO",{
+hour:"2-digit",
+minute:"2-digit"
+});
+
+}
+
+
+// FECHA
+
+else if(
+t.includes("qué día es") ||
+t.includes("que dia es") ||
+t.includes("fecha")
+){
+
+respuesta="Hoy es "+
+new Date().toLocaleDateString("es-CO",{
+weekday:"long",
+year:"numeric",
+month:"long",
+day:"numeric"
+});
+
+}
+
+
+// CÁLCULO
+
+else if(
+t.includes("cuánto es") ||
+t.includes("cuanto es") ||
+t.includes("calcula")
+){
+
+let expresion=t
+.replace("cuánto es","")
+.replace("cuanto es","")
+.replace("calcula","")
+.replace(/x/g,"*");
+
+try{
+
+if(/^[0-9+\-*/().\s]+$/.test(expresion)){
+
+let resultado=Function(
+'"use strict";return ('+expresion+')'
+)();
+
+respuesta="El resultado es "+resultado;
+
+}else{
+
+respuesta="Puedo calcular operaciones como 25 por 4 o 100 dividido entre 5.";
+
+}
+
+}catch{
+
+respuesta="No pude realizar ese cálculo.";
+
+}
+
+}
+
+
+// YOUTUBE
+
+else if(t.includes("abre youtube")){
+
+respuesta="Abriendo YouTube.";
+
+hablarRespuesta(respuesta);
+
+setTimeout(()=>{
+window.open("https://www.youtube.com","_blank");
+},700);
+
+return;
+
+}
+
+
+// GOOGLE
+
+else if(t.includes("abre google")){
+
+respuesta="Abriendo Google.";
+
+hablarRespuesta(respuesta);
+
+setTimeout(()=>{
+window.open("https://www.google.com","_blank");
+},700);
+
+return;
+
+}
+
+
+// RESPUESTA GENERAL
+
+else{
+
+respuesta=
+"Entiendo que me dices: "+texto+
+". Todavía no tengo conectado mi cerebro de inteligencia artificial. Esa será nuestra siguiente mejora.";
+
+}
+
+
+document.getElementById("nova").innerText=respuesta;
+
+hablarRespuesta(respuesta);
+
+document.getElementById("status").innerText=
+"Pulsa el botón para hablar";
+
+}
+
+
+function hablarRespuesta(texto){
+
+if(!("speechSynthesis" in window))return;
+
+speechSynthesis.cancel();
+
+const voz=new SpeechSynthesisUtterance(texto);
+
+voz.lang="es-CO";
+voz.rate=1;
+voz.pitch=1;
+
+speechSynthesis.speak(voz);
+
 }
 
 </script>
